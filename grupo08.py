@@ -254,13 +254,100 @@ class Gramatica():
             Representación de las reglas a aplicar para derivar la cadena
             utilizando la gramática.
         """
-        pass
+        pila = []
+        concecuentes = []
+        antecedentes = []
 
-#lista = Gramatica("A:b A\nB:a\nA:h\nA:B c\nA:lambda\nB:b").isLL1("A:b A\nB:a\nA:h\nA:B c\nA:lambda\nB:b")
+        #Saca al distuinguido, antecedentes y concecuentes
+        for i, x in enumerate(self.ListaCadena): 
+            caracteres = x.split(":")
+            ant = caracteres[0]
+            con = caracteres[1].split(" ")
+            antecedentes.append(ant)
+            concecuentes.append(con)
+            if i == 0:
+                self.distinguido = ant
 
-#Esta es de prueba
-#lista = Gramatica("A:b A\nA:B\nA:B C c\nB:lambda\nB:b\nC:h\nB:c").isLL1("A:b A\nA:B\nA:B C c\nB:lambda\nB:b\nC:h\nB:c")
+        lista_entrada = cadena.split(" ")
 
-#Prueba  follows
-lista = Gramatica("B:A a\nA:B a\nC:A B E\nE:g\nE:lambda\nB:c\nA:E a\nB:C h\nC:i e").isLL1()
+        derivaciones = self.distinguido + '=> '
+
+        pila.append(concecuentes[0])
+
+        for c in concecuentes[0]:
+           derivaciones += c + ' '
+        derivaciones += '=>'
+        print(derivaciones)
+
+        c = 0
+        pertenece = True
+
+        while pertenece == True:    
+            for pil in pila:
+                #Para los casos donde tenes terminales ya ingresados
+                n = 0
+                terminales_anteriores = []
+                while (pil[n] == lista_entrada[n]) and (pil[n].islower() == True):
+                    terminales_anteriores.append(pil[n])
+                    c += 1
+                    n += 1
+
+                if lista_entrada[n] == '$':
+                    pertenece = False
+
+                #Casos donde viene un NT que no se busco
+                elemento_agregar = []
+                if pil[n].isupper() == True:
+                    lista_select_nt = []
+                    con = 0
+                    while (con < len(antecedentes)):
+                        if antecedentes[con] == pil[n]:
+                            lista_select_nt.append(self.ListaSelect[con])
+                            con += 1
+                        else:
+                            lista_select_nt.append(None)
+                            con += 1
+                    
+                    for lsnt in lista_select_nt:
+                        if lsnt != None:
+                            for lsntd in lsnt:
+                                if lsntd == lista_entrada[n]:
+                                    for e in concecuentes[lista_select_nt.index(lsnt)]:
+                                        elemento_agregar.append(e)
+                    
+                    if elemento_agregar == []:
+                        derivaciones = 'No pertenece'
+                        pertenece = False
+
+
+                    #Agrego las derivaciones
+                    quedan_todavia = []    
+                    print(pil.index(pil[n]))
+                    pil.pop(pil.index(pil[n]))
+                    pila_aux = []
+                    for ta in terminales_anteriores:
+                        if ta in pil:
+                            pil.pop(pil.index(ta))
+                        pila_aux.append(ta)
+                        derivaciones += ta + ' '
+                    if pil != []:
+                        for pi in pil:
+                            quedan_todavia.append(pi)
+                        pil.pop()
+                    for ea in elemento_agregar:
+                        pila_aux.append(ea)
+                        derivaciones += ea + ' '
+                    for qt in quedan_todavia:
+                        pila_aux.append(qt)
+                        derivaciones += qt + ' '
+                    for pa in pila_aux:
+                        pil.append(pa) 
+                    derivaciones += '=>'
+                    print(derivaciones)  
+                    break                                   
+                else:
+                    pertenece = False
+                    derivaciones = 'No pertenece'   
+
+        return derivacioness
 
